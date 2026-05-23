@@ -1,0 +1,280 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+:root {
+  --bg: #070514;           /* Dark Abyss — deep indigo-purple; matches COL_NODES WebGL canvas */
+  --bg-elevated: #120C2B;  /* Slightly lighter indigo surface */
+  --ink: #ffffff;
+  --ink-dim: rgba(255, 255, 255, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), "Inter", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Apple-style Liquid Glass
+   ── Three signature layers, per Apple's own description ──
+     1. Background Blur  — strong real-time blur with saturate/contrast boost
+                           on whatever sits behind the element.
+     2. Refraction       — a thin highlight gradient drawn ONLY along the
+                           border (via a padding-box mask composite) so light
+                           appears to bend through the edge of the glass.
+     3. Color Tinting    — a soft radial top-edge specular bloom over a low-
+                           opacity white tint that lets the orb's colors leak
+                           through.
+   ──────────────────────────────────────────────────────────────────────── */
+.glass {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(22px) saturate(180%) contrast(105%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%) contrast(105%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 10px 30px rgba(0, 0, 0, 0.28);
+  isolation: isolate;
+}
+
+.glass-strong {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 12px 36px rgba(255, 255, 255, 0.06),
+    0 12px 36px rgba(0, 0, 0, 0.3);
+}
+
+/* Layer 2 — edge refraction. A bright→dim gradient drawn only inside the
+   1px ring of the border via padding-box mask composition. */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.05) 28%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.05) 72%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Layer 3 — top-edge specular bloom. Soft radial highlight near the top so
+   the surface picks up implied overhead light. */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 70% at 30% -20%,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.06) 35%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Make sure children render above the ::before/::after layers. */
+.glass > * {
+  position: relative;
+  z-index: 2;
+}
+
+.glass:hover {
+  background-color: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.glass-strong:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.glass,
+.glass-strong {
+  transition:
+    background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Card variant — adds a subtle lift + intensified specular on hover.
+   Stack on top of .glass: <article class="glass glass-card"> */
+.glass-card {
+  will-change: transform;
+}
+.glass-card:hover {
+  transform: translateY(-3px);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 18px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Spotlight card — radial gradient that tracks the cursor inside the card.
+   ── Composes with .glass: <SpotlightCard> renders .spotlight-host (the
+      glass container) with a .spotlight-glow child that holds the radial.
+   ── .spotlight-glow uses CSS custom properties --mouse-x and --mouse-y
+      that the React handler writes on every mousemove. On :hover the layer
+      fades in via opacity 0 → 1, on leave it fades out.
+   ── z-index 1 sits ABOVE .glass::before/::after (z=1) but BELOW the
+      content children which are z=2 via the existing `.glass > *` rule. */
+.spotlight-host {
+  position: relative;
+}
+.spotlight-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    520px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    var(--spotlight-color, rgba(255, 255, 255, 0.2)),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+.spotlight-host:hover .spotlight-glow,
+.spotlight-host:focus-within .spotlight-glow {
+  opacity: 1;
+}
+
+/* Shine-sweep — a thin diagonal highlight that travels across the button
+   on hover. The translate uses CSS variables so the value is animatable
+   purely from style; framer-motion isn't needed for the sweep itself. */
+.shine-on-hover {
+  position: relative;
+  overflow: hidden;
+}
+.shine-on-hover::before {
+  /* `.glass::before` is the refraction border layer — we don't want to
+     overwrite it. We stack the shine on the `::after`-adjacent slot instead
+     by giving the host a dedicated ::after override via a custom selector. */
+}
+.shine-on-hover > .__shine,
+.shine-on-hover::after {
+  /* (placeholder; the actual shine layer is drawn by ::after below) */
+}
+
+/* The .glass utility already uses ::before and ::after. To avoid clobbering
+   either, the shine is drawn by a separate child element painted via the
+   GlassButton component. See JSX in GlassButton.tsx. The class below styles
+   that child. */
+.shine-layer {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 1;
+}
+.shine-layer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  left: -50%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.22) 45%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.22) 55%,
+    transparent 100%
+  );
+  transform: skewX(-18deg) translateX(0);
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.shine-on-hover:hover .shine-layer::before {
+  transform: skewX(-18deg) translateX(420%);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Abyss glass variant — /pricing and /contact (Dark Abyss theme).
+   Stack on top of .glass: <div class="glass glass-abyss">
+   ── Declared AFTER .glass so single-class specificity wins on all
+      overrides (background-color, border-color, ::before gradient).
+   ── The purple tint (rgba(26, 21, 58, …)) harmonises with COL_NODES
+      (#070514) behind the WebGL canvas.  Backdrop-filter blurs the deep
+      indigo canvas, creating rich volumetric depth without white-washing.
+   ── ::before overrides .glass::before so edge-refraction glints are
+      purple instead of neutral white — matching the indigo light source.
+   ────────────────────────────────────────────────────────────────────────── */
+.glass-abyss {
+  background-color: rgba(38, 38, 44, 0.72);    /* neutral dark charcoal          */
+  border-color:     rgba(255, 255, 255, 0.08); /* subtle white border            */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),   /* top edge: neutral specular     */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.glass-abyss::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 28%,
+    rgba(255, 255, 255, 0.00) 50%,
+    rgba(255, 255, 255, 0.02) 72%,
+    rgba(255, 255, 255, 0.09) 100%
+  );
+}
+
+.glass-abyss:hover {
+  background-color: rgba(48, 48, 56, 0.80);
+  border-color:     rgba(255, 255, 255, 0.13);
+}
+
+
