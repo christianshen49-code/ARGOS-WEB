@@ -32,6 +32,7 @@ export function PageTransitionOverlay() {
     if (!el) return;
 
     pageTransition.register((href: string) => {
+      gsap.killTweensOf(el);
       gsap.set(el, { display: "block", clipPath: "circle(0% at 50% 50%)" });
       gsap.to(el, {
         clipPath: "circle(150% at 50% 50%)",
@@ -40,6 +41,8 @@ export function PageTransitionOverlay() {
         onComplete: () => router.push(href),
       });
     });
+
+    return () => { gsap.killTweensOf(el); };
   }, [router]);
 
   // Collapse overlay when the new pathname is detected (page has mounted)
@@ -49,6 +52,7 @@ export function PageTransitionOverlay() {
     const el = overlayRef.current;
     if (!el) return;
 
+    gsap.killTweensOf(el);
     gsap.to(el, {
       clipPath: "circle(0% at 50% 50%)",
       duration: 0.70,
@@ -56,6 +60,8 @@ export function PageTransitionOverlay() {
       delay: 0.08,
       onComplete: () => gsap.set(el, { display: "none" }),
     });
+
+    return () => { gsap.killTweensOf(el); };
   }, [pathname]);
 
   return (

@@ -241,10 +241,11 @@ export function GlobalScrollSync() {
     window.scrollTo(0, 0);
 
     // Step 2: Kill ALL stale ScrollTriggers synchronously.
-    // This runs before any rAF callbacks, so it cannot kill the fresh triggers
-    // that ScrollController and Nodes will create in their own upcoming rAFs.
-    ScrollTrigger.killAll();
+    // clearScrollMemory must run before killAll — calling it after leaves GSAP's
+    // internal scroll-position cache in a partially-cleaned state that can corrupt
+    // subsequent refresh() calls.
     ScrollTrigger.clearScrollMemory();
+    ScrollTrigger.killAll();
 
     // Step 3: After the new page's rAFs have registered fresh triggers,
     // refresh GSAP's layout snapshot and re-cache section boundaries.

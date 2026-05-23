@@ -65,6 +65,7 @@ export function RouteSync() {
 
       // ScrollController is NOT mounted on these routes, so we fade the canvas
       // in ourselves. Short delay lets the warp overlay collapse first.
+      gsap.killTweensOf("#three-scene");
       gsap.to("#three-scene", {
         opacity: 1,
         duration: 0.9,
@@ -112,6 +113,10 @@ export function RouteSync() {
         scrollStore.setState({ isPricing: false });
       }
     }
+    return () => {
+      gsap.killTweensOf("#three-scene");
+      gsap.killTweensOf(ssProxy.current);
+    };
   }, [pathname]);
 
   return null;

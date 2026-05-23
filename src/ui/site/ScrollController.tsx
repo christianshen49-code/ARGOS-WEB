@@ -42,6 +42,7 @@ export function ScrollController() {
   useEffect(() => {
     let rafId: number;
     let ctx: gsap.Context;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     rafId = requestAnimationFrame(() => {
       ctx = gsap.context(() => {
@@ -130,11 +131,12 @@ export function ScrollController() {
       // animations, IntroCurtain, and any other components that affect document
       // height after mount.  Without this, triggers fire at wrong scroll offsets
       // on route-return visits, making the scroll-to-WebGL transitions appear dead.
-      setTimeout(() => ScrollTrigger.refresh(), 80);
+      timeoutId = setTimeout(() => ScrollTrigger.refresh(), 80);
     });
 
     return () => {
       cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
       ctx?.revert();
     };
   }, []);
